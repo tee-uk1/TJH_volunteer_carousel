@@ -80,3 +80,8 @@ Submit the form with a photo, tick `Approved` on the new row, and reload the pag
 - Drive photo links use `drive.google.com/thumbnail`, which is subject to Google's availability and rate limits.
 - Changes appear on the next page load; there is no manual cache to clear on the carousel side. Photo sharing permissions are cached by the script for 6 hours.
 - Delete or untick any test rows before going live.
+
+## License and credits
+Released under the [MIT License](LICENSE). Copyright (c) 2026 The Job Hackers.
+
+Created by [tee-uk1](https://github.com/tee-uk1) for The Job Hackers.
