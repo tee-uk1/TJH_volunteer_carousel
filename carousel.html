@@ -56,7 +56,14 @@
       var s = document.createElement('div');
       s.className = 'tjh-vc-slide';
       var img = v.photo ? document.createElement('img') : document.createElement('div');
-      if (v.photo) { img.src = v.photo; img.alt = v.name; img.loading = 'lazy'; }
+      if (v.photo) {
+        img.alt = v.name; img.loading = 'lazy';
+        img.onerror = function () { // fall back to a placeholder if the photo fails to load
+          var ph = document.createElement('div'); ph.className = 'tjh-vc-ph';
+          if (img.parentNode) img.parentNode.replaceChild(ph, img);
+        };
+        img.src = v.photo;
+      }
       else img.className = 'tjh-vc-ph';
       var n = document.createElement('div');
       n.className = 'tjh-vc-name';
