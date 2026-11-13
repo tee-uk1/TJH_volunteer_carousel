@@ -62,3 +62,21 @@ function linkedinUrl_(v) {
   if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
   return /^https:\/\/([\w-]+\.)?linkedin\.com\//i.test(u) ? u : '';
 }
+
+/**
+ * Emails the coordinator(s) when a new volunteer submits the form.
+ * Setup: Triggers -> Add Trigger -> notifyNewVolunteer -> From spreadsheet -> On form submit.
+ * Set NOTIFY_TO below (comma-separated for several recipients).
+ */
+var NOTIFY_TO = 'coordinator@example.org';
+
+function notifyNewVolunteer(e) {
+  var name = ((e.namedValues['Full name:'] || [''])[0]);
+  MailApp.sendEmail({
+    to: NOTIFY_TO,
+    subject: 'New volunteer submission: ' + name,
+    body: name + ' has submitted their details.\n\n' +
+          'Review and tick "Approved" to publish them on the website:\n' +
+          SpreadsheetApp.getActiveSpreadsheet().getUrl()
+  });
+}
