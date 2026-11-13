@@ -4,10 +4,10 @@
  * Bound to the Google Sheet that receives the volunteer Google Form responses.
  * Deploy as: Web app -> Execute as "Me" -> Who has access "Anyone".
  *
- * Expected sheet columns (header row, any order, case-insensitive):
- *   Name | Photo | Approved
- * "Photo" is the Drive file upload question (a Drive URL).
- * "Approved" is a checkbox column you add manually (tick = show on site).
+ * Columns are matched by the START of the header text (case-insensitive), any order:
+ *   "Full name" | "Upload photo" | "LinkedIn" (optional) | "Approved"
+ * "Upload photo" is the Drive file upload question (a Drive URL).
+ * "Approved" is a tickbox column added manually (ticked = show on site).
  */
 var SHEET_NAME = ''; // leave blank to use the first sheet
 
@@ -16,15 +16,20 @@ function doGet() {
   var sheet = SHEET_NAME ? ss.getSheetByName(SHEET_NAME) : ss.getSheets()[0];
   var rows = sheet.getDataRange().getValues();
   var head = rows.shift().map(function (h) { return String(h).trim().toLowerCase(); });
-  var iName = head.indexOf('name');
-  var iPhoto = head.indexOf('photo');
-  var iOk = head.indexOf('approved');
+  var iName = col_(head, 'full name');
+  var iPhoto = col_(head, 'upload photo');
+  var iLink = col_(head, 'linkedin');
+  var iOk = col_(head, 'approved');
 
   var cache = CacheService.getScriptCache();
   var out = [];
   rows.forEach(function (r) {
     if (r[iOk] !== true || !r[iName]) return;
-    out.push({ name: String(r[iName]).trim(), photo: photoUrl_(r[iPhoto], cache) });
+    out.push({
+      name: String(r[iName]).trim(),
+      photo: photoUrl_(r[iPhoto], cache),
+      linkedin: linkedinUrl_(iLink < 0 ? '' : r[iLink])
+    });
   });
 
   return ContentService.createTextOutput(JSON.stringify(out))
@@ -43,4 +48,17 @@ function photoUrl_(value, cache) {
     } catch (e) { return ''; }
   }
   return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w600';
+}
+
+function col_(head, prefix) {
+  for (var i = 0; i < head.length; i++) if (head[i].indexOf(prefix) === 0) return i;
+  return -1;
+}
+
+/** Returns a safe https LinkedIn URL, or '' if missing/invalid. */
+function linkedinUrl_(v) {
+  var u = String(v || '').trim();
+  if (!u) return '';
+  if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+  return /^https:\/\/([\w-]+\.)?linkedin\.com\//i.test(u) ? u : '';
 }

@@ -13,6 +13,7 @@
 .tjh-vc-track{display:flex;transition:transform .5s ease}
 .tjh-vc-slide{flex:0 0 25%;padding:0 12px;text-align:center}
 .tjh-vc-slide img,.tjh-vc-ph{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:50%;background:#e5e7eb;display:block}
+.tjh-vc-slide a{color:inherit;text-decoration:none;display:block}
 .tjh-vc-name{margin-top:12px;font-weight:600}
 .tjh-vc-btn{position:absolute;top:40%;transform:translateY(-50%);background:none;border:0;font-size:24px;cursor:pointer;padding:8px;color:#333}
 .tjh-vc-prev{left:0}.tjh-vc-next{right:0}
@@ -22,7 +23,7 @@
 
 <script>
 (function () {
-  var FEED_URL = 'PASTE_APPS_SCRIPT_WEB_APP_URL_HERE';
+  var FEED_URL = 'https://script.google.com/macros/s/AKfycbztDMUVcCqW9sIawJOx-gkfw4Dct8bcdiMPNDPS0gwJWr3IuEECaUYvlxTKALw9osmk/exec';
   var AUTOPLAY_MS = 4000;
 
   var root = document.getElementById('tjh-vc');
@@ -60,7 +61,14 @@
       var n = document.createElement('div');
       n.className = 'tjh-vc-name';
       n.textContent = v.name; // textContent: safe against injected markup
-      s.appendChild(img); s.appendChild(n);
+      var box = s;
+      if (v.linkedin) {
+        box = document.createElement('a');
+        box.href = v.linkedin; box.target = '_blank'; box.rel = 'noopener noreferrer';
+        box.setAttribute('aria-label', v.name + ' on LinkedIn');
+        s.appendChild(box);
+      }
+      box.appendChild(img); box.appendChild(n);
       track.appendChild(s);
     });
     var hide = items.length <= perView() ? 'none' : '';
