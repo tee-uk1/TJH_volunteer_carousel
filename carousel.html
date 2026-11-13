@@ -1,0 +1,81 @@
+<!-- TJH Volunteer Carousel: paste into a WordPress "Custom HTML" block.
+     Set FEED_URL below to your Apps Script web app URL. -->
+<div id="tjh-vc" class="tjh-vc" aria-label="Our Volunteers">
+  <button class="tjh-vc-btn tjh-vc-prev" aria-label="Previous">&#10094;</button>
+  <div class="tjh-vc-viewport"><div class="tjh-vc-track"></div></div>
+  <button class="tjh-vc-btn tjh-vc-next" aria-label="Next">&#10095;</button>
+</div>
+
+<style>
+.tjh-vc{position:relative;max-width:1100px;margin:0 auto;padding:0 44px;box-sizing:border-box}
+.tjh-vc *{box-sizing:border-box}
+.tjh-vc-viewport{overflow:hidden}
+.tjh-vc-track{display:flex;transition:transform .5s ease}
+.tjh-vc-slide{flex:0 0 25%;padding:0 12px;text-align:center}
+.tjh-vc-slide img,.tjh-vc-ph{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:50%;background:#e5e7eb;display:block}
+.tjh-vc-name{margin-top:12px;font-weight:600}
+.tjh-vc-btn{position:absolute;top:40%;transform:translateY(-50%);background:none;border:0;font-size:24px;cursor:pointer;padding:8px;color:#333}
+.tjh-vc-prev{left:0}.tjh-vc-next{right:0}
+@media(max-width:900px){.tjh-vc-slide{flex-basis:50%}}
+@media(max-width:480px){.tjh-vc-slide{flex-basis:100%}}
+</style>
+
+<script>
+(function () {
+  var FEED_URL = 'PASTE_APPS_SCRIPT_WEB_APP_URL_HERE';
+  var AUTOPLAY_MS = 4000;
+
+  var root = document.getElementById('tjh-vc');
+  var track = root.querySelector('.tjh-vc-track');
+  var pos = 0, timer, items = [];
+
+  function perView() {
+    var w = window.innerWidth;
+    return w <= 480 ? 1 : w <= 900 ? 2 : 4;
+  }
+  function maxPos() { return Math.max(0, items.length - perView()); }
+  function render() {
+    track.style.transform = 'translateX(' + (-pos * (100 / perView())) + '%)';
+  }
+  function go(d) {
+    pos += d;
+    if (pos > maxPos()) pos = 0;
+    if (pos < 0) pos = maxPos();
+    render();
+  }
+  function play() {
+    clearInterval(timer);
+    if (items.length > perView()) timer = setInterval(function () { go(1); }, AUTOPLAY_MS);
+  }
+
+  function build(list) {
+    items = list;
+    if (!items.length) { root.style.display = 'none'; return; }
+    items.forEach(function (v) {
+      var s = document.createElement('div');
+      s.className = 'tjh-vc-slide';
+      var img = v.photo ? document.createElement('img') : document.createElement('div');
+      if (v.photo) { img.src = v.photo; img.alt = v.name; img.loading = 'lazy'; }
+      else img.className = 'tjh-vc-ph';
+      var n = document.createElement('div');
+      n.className = 'tjh-vc-name';
+      n.textContent = v.name; // textContent: safe against injected markup
+      s.appendChild(img); s.appendChild(n);
+      track.appendChild(s);
+    });
+    var hide = items.length <= perView() ? 'none' : '';
+    root.querySelector('.tjh-vc-prev').style.display = hide;
+    root.querySelector('.tjh-vc-next').style.display = hide;
+    render(); play();
+  }
+
+  root.querySelector('.tjh-vc-prev').onclick = function () { go(-1); play(); };
+  root.querySelector('.tjh-vc-next').onclick = function () { go(1); play(); };
+  root.onmouseenter = function () { clearInterval(timer); };
+  root.onmouseleave = play;
+  window.addEventListener('resize', function () { pos = Math.min(pos, maxPos()); render(); play(); });
+
+  fetch(FEED_URL).then(function (r) { return r.json(); }).then(build)
+    .catch(function () { root.style.display = 'none'; });
+})();
+</script>
